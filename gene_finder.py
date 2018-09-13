@@ -2,7 +2,7 @@
 """
 YOUR HEADER COMMENT HERE
 
-@author: YOUR NAME HERE
+@author: Sampei Omichi
 
 """
 
@@ -22,7 +22,6 @@ def shuffle_string(s):
 
 def get_complement(nucleotide):
     """ Returns the complementary nucleotide
-
         nucleotide: a nucleotide (A, C, G, or T) represented as a string
         returns: the complementary nucleotide
     >>> get_complement('A')
@@ -30,9 +29,15 @@ def get_complement(nucleotide):
     >>> get_complement('C')
     'G'
     """
-    # TODO: implement this
-    pass
-
+    # Complete
+    if nucleotide == 'A':
+        return 'T'
+    elif nucleotide == 'T':
+        return 'A'
+    elif nucleotide == 'C':
+        return 'G'
+    elif nucleotide == "G":
+        return 'C'
 
 def get_reverse_complement(dna):
     """ Computes the reverse complementary sequence of DNA for the specfied DNA
@@ -45,9 +50,11 @@ def get_reverse_complement(dna):
     >>> get_reverse_complement("CCGCGTTCA")
     'TGAACGCGG'
     """
-    # TODO: implement this
-    pass
-
+    # Complete
+    reverse_complement = ''
+    for i in dna:
+        reverse_complement = get_complement(i) + reverse_complement
+    return reverse_complement
 
 def rest_of_ORF(dna):
     """ Takes a DNA sequence that is assumed to begin with a start
@@ -62,9 +69,18 @@ def rest_of_ORF(dna):
     >>> rest_of_ORF("ATGAGATAGG")
     'ATGAGA'
     """
-    # TODO: implement this
-    pass
-
+    # Complete
+    stop_codon = ['TAG', 'TAA', 'TGA']
+    ORF = ''
+    dna = dna[3:]
+    for i in dna:
+        if stop_codon[0] in ORF or stop_codon[1] in ORF or stop_codon[2] in ORF:
+            ORF = ORF[:-3]
+            ORF = 'ATG' + ORF
+            break
+        else:
+            ORF = ORF + i
+    return ORF
 
 def find_all_ORFs_oneframe(dna):
     """ Finds all non-nested open reading frames in the given DNA
@@ -79,9 +95,39 @@ def find_all_ORFs_oneframe(dna):
     >>> find_all_ORFs_oneframe("ATGCATGAATGTAGATAGATGTGCCC")
     ['ATGCATGAATGTAGA', 'ATGTGCCC']
     """
-    # TODO: implement this
+    # Clean up
+    ORFs_oneframe = []
+    dna_list = []
+    while dna:
+        dna_list.append(dna[:3])
+        dna = dna[3:]
+    to_add = []
+    count = 0
+    ORF = ''
+    to_change = ['ATG', 'TAG', 'TAA', 'TGA']
+    for i in to_change:
+        changed = False
+        while changed == False:
+            if i not in dna_list:
+                changed = True
+            else:
+                index = dna_list.index(i)
+                dna_list[index] = 'x'
+    for i in dna_list:
+        dna = dna + i
+    firstatg = 0
+    if 'x' in dna:
+        firstatg = dna.index('x')
+    dna = dna[firstatg:]
+    dna_list = dna.split('x')
+    for i in dna_list:
+        if i == '':
+            dna_list.remove(i)
+    for i in dna_list:
+        ORF = 'ATG' + i
+        ORFs_oneframe.append(ORF)
+    return ORFs_oneframe
     pass
-
 
 def find_all_ORFs(dna):
     """ Finds all non-nested open reading frames in the given DNA sequence in
@@ -96,8 +142,18 @@ def find_all_ORFs(dna):
     >>> find_all_ORFs("ATGCATGAATGTAG")
     ['ATGCATGAATGTAG', 'ATGAATGTAG', 'ATG']
     """
-    # TODO: implement this
+    # Complete
+    all_ORFS = []
+    frame1 = find_all_ORFs_oneframe(dna)
+    frame2 = find_all_ORFs_oneframe(dna[1:])
+    frame3 = find_all_ORFs_oneframe(dna[2:])
+    ORFS =  frame1 + frame2 + frame3
+    for i in ORFS:
+        if i not in all_ORFS:
+            all_ORFS.append(i)
+    return all_ORFS
     pass
+
 
 
 def find_all_ORFs_both_strands(dna):
@@ -109,9 +165,14 @@ def find_all_ORFs_both_strands(dna):
     >>> find_all_ORFs_both_strands("ATGCGAATGTAGCATCAAA")
     ['ATGCGAATG', 'ATGCTACATTCGCAT']
     """
-    # TODO: implement this
+    # Complete find_all_ORFs
+    front = dna
+    reverse = get_reverse_complement(dna)
+    ORFS_both_stands = find_all_ORFs(front) + find_all_ORFs(reverse)
+    return ORFS_both_stands
     pass
 
+print(find_all_ORFs_both_strands("ATGCGAATGTAGCATCAAA"))
 
 def longest_ORF(dna):
     """ Finds the longest ORF on both strands of the specified DNA and returns it
