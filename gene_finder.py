@@ -71,16 +71,10 @@ def rest_of_ORF(dna):
     """
     # Complete
     stop_codon = ['TAG', 'TAA', 'TGA']
-    ORF = ''
     dna = dna[3:]
-    for i in dna:
-        if stop_codon[0] in ORF or stop_codon[1] in ORF or stop_codon[2] in ORF:
-            ORF = ORF[:-3]
-            ORF = 'ATG' + ORF
-            break
-        else:
-            ORF = ORF + i
-    return ORF
+    for i in range(len(dna)):
+        if dna[i:i+3] in stop_codon:
+            return 'ATG' + dna[0:i]
 
 def find_all_ORFs_oneframe(dna):
     """ Finds all non-nested open reading frames in the given DNA
@@ -95,39 +89,29 @@ def find_all_ORFs_oneframe(dna):
     >>> find_all_ORFs_oneframe("ATGCATGAATGTAGATAGATGTGCCC")
     ['ATGCATGAATGTAGA', 'ATGTGCCC']
     """
-    # Clean up
-    ORFs_oneframe = []
-    dna_list = []
-    while dna:
-        dna_list.append(dna[:3])
-        dna = dna[3:]
-    to_add = []
-    count = 0
+    # Complete
+    stop_codon_list = ['TAG', 'TAA', 'TGA']
     ORF = ''
-    to_change = ['ATG', 'TAG', 'TAA', 'TGA']
-    for i in to_change:
-        changed = False
-        while changed == False:
-            if i not in dna_list:
-                changed = True
+    all_ORFs_oneframe = []
+    start_codon = None
+    stop_codon = None
+    for i in range(len(dna)):
+        if i % 3 == 0 and dna[i:i+3] == 'ATG':
+            if start_codon != None and stop_codon == None:
+                pass
             else:
-                index = dna_list.index(i)
-                dna_list[index] = 'x'
-    for i in dna_list:
-        dna = dna + i
-    firstatg = 0
-    if 'x' in dna:
-        firstatg = dna.index('x')
-    dna = dna[firstatg:]
-    dna_list = dna.split('x')
-    for i in dna_list:
-        if i == '':
-            dna_list.remove(i)
-    for i in dna_list:
-        ORF = 'ATG' + i
-        ORFs_oneframe.append(ORF)
-    return ORFs_oneframe
-    pass
+                start_codon = i
+        if i % 3 == 0 and dna[i:i+3] in stop_codon_list:
+            stop_codon = i
+        if i % 3 == 0 and dna[i:i+3] and start_codon != None and stop_codon != None:
+            ORF = dna[start_codon: stop_codon]
+        if ORF != '':
+            all_ORFs_oneframe.append(ORF)
+            ORF = ''
+        elif i == len(dna) - 1:
+            ORF = dna[start_codon:i+1]
+            all_ORFs_oneframe.append(ORF)
+    return all_ORFs_oneframe
 
 def find_all_ORFs(dna):
     """ Finds all non-nested open reading frames in the given DNA sequence in
@@ -144,17 +128,14 @@ def find_all_ORFs(dna):
     """
     # Complete
     all_ORFS = []
-    frame1 = find_all_ORFs_oneframe(dna)
-    frame2 = find_all_ORFs_oneframe(dna[1:])
-    frame3 = find_all_ORFs_oneframe(dna[2:])
-    ORFS =  frame1 + frame2 + frame3
+    frame_1 = find_all_ORFs_oneframe(dna)
+    frame_2 = find_all_ORFs_oneframe(dna[1:])
+    frame_3 = find_all_ORFs_oneframe(dna[2:])
+    ORFS =  frame_1 + frame_2 + frame_3
     for i in ORFS:
-        if i not in all_ORFS:
+        if i not in all_ORFS and i[0:3] == 'ATG':
             all_ORFS.append(i)
     return all_ORFS
-    pass
-
-
 
 def find_all_ORFs_both_strands(dna):
     """ Finds all non-nested open reading frames in the given DNA sequence on both
@@ -165,14 +146,11 @@ def find_all_ORFs_both_strands(dna):
     >>> find_all_ORFs_both_strands("ATGCGAATGTAGCATCAAA")
     ['ATGCGAATG', 'ATGCTACATTCGCAT']
     """
-    # Complete find_all_ORFs
+    # Complete
     front = dna
     reverse = get_reverse_complement(dna)
     ORFS_both_stands = find_all_ORFs(front) + find_all_ORFs(reverse)
     return ORFS_both_stands
-    pass
-
-print(find_all_ORFs_both_strands("ATGCGAATGTAGCATCAAA"))
 
 def longest_ORF(dna):
     """ Finds the longest ORF on both strands of the specified DNA and returns it
@@ -211,7 +189,6 @@ def coding_strand_to_AA(dna):
     """
     # TODO: implement this
     pass
-
 
 def gene_finder(dna):
     """ Returns the amino acid sequences that are likely coded by the specified dna
